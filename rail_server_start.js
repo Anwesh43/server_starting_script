@@ -11,18 +11,19 @@ const runServer = (serverName)=>{
         const command = serverObj["command"]
         console.log(path)
         console.log(command)
-        childProcess.exec(`cd ${path};${command}`,{maxBuffer:n*1024*1024},(err,stdout)=>{
-                if(err) {
-                        console.log(err)
-                }
-                else {
-                        console.log("successfully changed folder")
-                        console.log(stdout)
-                        console.log(stderr)
-
-                }
-        })
-
+				process.chdir(path)
+				const commandParts = command.split(' ')
+				if(commandParts.length > 0) {
+						const mainCommand = commandParts[0]
+						commandParts.splice(0,1)
+						const serverCommand = childProcess.spawn(mainCommand,commandParts)
+						serverCommand.stdout.on('data',(data)=>{
+								console.log(`${serverName}-${data.toString()}`)
+						})
+						serverCommand.stdout.on('close',()=>{
+								console.log(`${serverName} has stopped`)
+						})
+				}
 }
 if(process.argv.length == 3){
 	const serverName = process.argv[2]
